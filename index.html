@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GESTÃO JM DE COMPRAS - MELHORADO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #e0e7ff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding-top: 3.5rem;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #2563eb, #081A91);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.75);
+      z-index: 50;
+      height: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      color: #c7d2fe;
+      text-transform: uppercase;
+    }
+    .alerts-indicator {
+      position: relative;
+      cursor: pointer;
+    }
+    .alert-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    nav {
+      background-color: #1e293b;
+      box-shadow: inset 0 -2px 0 #3b82f6;
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      padding: 0.5rem 0;
+      position: sticky;
+      top: 3.5rem;
+      z-index: 40;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      transition: color 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+    nav button i {
+      margin-right: 0.5rem;
+    }
+    nav button.active {
+      color: #3b82f6;
+      border-color: #3b82f6;
+      background-color: #1e40af33;
+      border-radius: 0.25rem 0.25rem 0 0;
+      font-weight: 700;
+    }
+    nav button:hover:not(.active) {
+      color: #60a5fa;
+    }
+    .tab-content {
+      display: none;
+      max-width: 1200px;
+      margin: 1.5rem auto 2rem;
+      padding: 1rem 2rem;
+      background-color: #1e293b;
+      box-shadow: 0 0 15px #3b82f6aa;
+      border-radius: 0.5rem;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeInTab 0.4s ease;
+    }
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #0f172a;
+      color: #cbd5e1;
+      box-shadow: 0 0 12px #3b82f6bb;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    thead tr {
+      background: #2563eb;
+      color: #e0e7ff;
+      font-weight: 700;
+    }
+    thead th, tbody td {
+      padding: 0.75rem 1.25rem;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+      vertical-align: middle;
+    }
+    .hover-gray:hover {
+      background-color: #334155aa;
+      cursor: pointer;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.9rem;
+      transition: background-color 0.3s, color 0.3s;
+      cursor: pointer;
+      user-select: none;
+      border: 2px solid transparent;
+    }
+    .btn i { font-size: 1rem; }
+    .btn-save { background-color: #3b82f6; border-color: #3b82f6; color: white; }
+    .btn-save:hover { background-color: #60a5fa; border-color: #60a5fa; }
+    .btn-cancel { background-color: #64748b; border-color: #64748b; color: white; }
+    .btn-cancel:hover { background-color: #475569; border-color: #475569; }
+    .btn-add { background-color: #10b981; border-color: #10b981; color: white; }
+    .btn-add:hover { background-color: #34d399; border-color: #34d399; }
+    .btn-edit { background-color: #fbbf24; border-color: #fbbf24; color: #1e293b; padding: 0.3rem 0.6rem; }
+    .btn-edit:hover { background-color: #facc15; border-color: #facc15; }
+    .btn-delete { background-color: #ef4444; border-color: #ef4444; color: white; padding: 0.3rem 0.6rem; }
+    .btn-delete:hover { background-color: #dc2626; border-color: #dc2626; }
+    .btn-warning { background-color: #f59e0b; border-color: #f59e0b; color: white; }
+    .btn-warning:hover { background-color: #d97706; border-color: #d97706; }
+    form > div { margin-bottom: 1rem; }
+    label {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      display: block;
+      color: #cbd5e1;
+    }
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      background-color: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 0.375rem;
+      color: #cbd5e1;
+      padding: 0.5rem 0.75rem;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 8px #3b82f6aa;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .form-container {
+      margin-top: 1rem;
+      border-top: 2px solid #2563eb;
+      padding-top: 1rem;
+      animation: fadeInTab 0.4s ease;
+    }
+    .flex-end {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .dashboard-card {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+    }
+    .alert-item {
+      animation: slideIn 0.5s ease;
+      margin-bottom: 0.5rem;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-ok { background: #065f46; color: #a7f3d0; }
+    .status-low { background: #92400e; color: #fcd34d; }
+    .status-critical { background: #991b1b; color: #fca5a5; }
+    .notification {
+      position: fixed;
+      top: 4rem;
+      right: 1rem;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 1000;
+      min-width: 300px;
+      animation: slideInRight 0.3s ease;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .notification.error {
+      border-left: 4px solid #ef4444;
+    }
+    .notification.warning {
+      border-left: 4px solid #f59e0b;
+    }
+    .notification.success {
+      border-left: 4px solid #10b981;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .comparison-table {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    
+    .cotacao-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .cotacao-card h3 {
+      color: #e0e7ff;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    
+    .cotacao-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    
+    .cotacao-table th {
+      background: #2563eb;
+      color: #e0e7ff;
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    .cotacao-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #334155;
+      color: #cbd5e1;
+    }
+    
+    .cotacao-table input {
+      background: #374151;
+      border: 1px solid #4b5563;
+      border-radius: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      color: #e0e7ff;
+      width: 80px;
+    }
+    
+         .cotacao-table input:focus {
+       outline: none;
+       border-color: #3b82f6;
+       box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+     }
+     
+     /* Modal Styles */
+     .modal {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       z-index: 1000;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+     }
+     
+     .modal-content {
+       background: #1e293b;
+       border-radius: 0.5rem;
+       width: 90%;
+       max-width: 1200px;
+       max-height: 90vh;
+       overflow-y: auto;
+       border: 1px solid #334155;
+     }
+     
+     .modal-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding: 1.5rem;
+       border-bottom: 1px solid #334155;
+     }
+     
+     .modal-header h3 {
+       color: #e0e7ff;
+       font-size: 1.5rem;
+       font-weight: 700;
+       margin: 0;
+     }
+     
+     .close-btn {
+       background: none;
+       border: none;
+       color: #94a3b8;
+       font-size: 2rem;
+       cursor: pointer;
+       padding: 0;
+       width: 2rem;
+       height: 2rem;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+     }
+     
+     .close-btn:hover {
+       color: #e0e7ff;
+     }
+     
+     .modal-body {
+       padding: 1.5rem;
+     }
+     
+     .filtros-relatorio {
+       background: #0f172a;
+       padding: 1rem;
+       border-radius: 0.5rem;
+       margin-bottom: 1.5rem;
+     }
+     
+     .tabs-relatorio {
+       display: flex;
+       gap: 0.5rem;
+       margin-bottom: 1.5rem;
+       border-bottom: 1px solid #334155;
+     }
+     
+     .tab-btn {
+       background: none;
+       border: none;
+       color: #94a3b8;
+       padding: 0.75rem 1.5rem;
+       cursor: pointer;
+       border-bottom: 3px solid transparent;
+       transition: all 0.3s;
+     }
+     
+     .tab-btn.active {
+       color: #3b82f6;
+       border-bottom-color: #3b82f6;
+       background: #1e40af33;
+     }
+     
+     .tab-btn:hover:not(.active) {
+       color: #60a5fa;
+     }
+     
+     .tab-conteudo {
+       display: none;
+     }
+     
+     .tab-conteudo.active {
+       display: block;
+     }
+     
+     .relatorio-table {
+       width: 100%;
+       border-collapse: collapse;
+       background: #0f172a;
+       color: #cbd5e1;
+       border-radius: 0.5rem;
+       overflow: hidden;
+     }
+     
+     .relatorio-table th {
+       background: #2563eb;
+       color: #e0e7ff;
+       padding: 0.75rem;
+       text-align: left;
+       font-weight: 600;
+     }
+     
+     .relatorio-table td {
+       padding: 0.75rem;
+       border-bottom: 1px solid #334155;
+     }
+     
+     .relatorio-table tr:hover {
+       background: #334155aa;
+     }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">GESTÃO JM DE COMPRAS</div>
+    <div class="alerts-indicator" onclick="toggleAlertsPanel()">
+      <i class="fas fa-bell text-xl text-white"></i>
+      <span id="alert-count" class="alert-badge">0</span>
+    </div>
+  </header>
+  <nav>
+    <button id="tab-dashboard" class="active" onclick="showTab('dashboard')"><i class="fas fa-tachometer-alt"></i>Dashboard</button>
+    <button id="tab-estoque" onclick="showTab('estoque')"><i class="fas fa-boxes"></i>Estoque</button>
+    <button id="tab-movimentacao" onclick="showTab('movimentacao')"><i class="fas fa-exchange-alt"></i>Movimentação</button>
+    <button id="tab-fornecedores" onclick="showTab('fornecedores')"><i class="fas fa-users"></i>Fornecedores</button>
+    <button id="tab-produtos" onclick="showTab('produtos')"><i class="fas fa-shopping-cart"></i>Produtos</button>
+    <button id="tab-cotacoes" onclick="showTab('cotacoes')"><i class="fas fa-file-invoice-dollar"></i>Cotações</button>
+    <button id="tab-comparacao" onclick="showTab('comparacao')"><i class="fas fa-balance-scale"></i>Comparar</button>
+    <button id="tab-pedidos" onclick="showTab('pedidos')"><i class="fas fa-clipboard-list"></i>Pedidos</button>
+    <button id="tab-relatorios" onclick="showTab('relatorios')"><i class="fas fa-chart-bar"></i>Relatórios</button>
+  </nav>
+  <main>
+    <!-- Dashboard -->
+    <section id="content-dashboard" class="tab-content active">
+      <h2 class="text-3xl font-bold mb-6 text-white">Dashboard</h2>
+      <div class="action-buttons">
+        <button class="btn btn-add" onclick="showTab('produtos'); showProdutoForm();">
+          <i class="fas fa-plus mr-2"></i>Novo Produto
+        </button>
+        <button class="btn btn-save" onclick="showTab('fornecedores'); showFornecedorForm();">
+          <i class="fas fa-building mr-2"></i>Novo Fornecedor
+        </button>
+        <button class="btn btn-warning" onclick="showTab('movimentacao'); showMovimentacaoForm();">
+          <i class="fas fa-exchange-alt mr-2"></i>Movimentar Estoque
+        </button>
+        <button class="btn btn-save" onclick="showRelatorioGeral()">
+          <i class="fas fa-chart-line mr-2"></i>Relatório Geral
+        </button>
+        <button class="btn btn-warning" onclick="exportarDados()">
+          <i class="fas fa-download mr-2"></i>Exportar Dados
+        </button>
+        <button class="btn btn-add" onclick="importarDados()">
+          <i class="fas fa-upload mr-2"></i>Importar Dados
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="dashboard-card">
+          <div class="text-4xl text-blue-400 mb-2"><i class="fas fa-boxes"></i></div>
+          <div id="total-produtos" class="text-2xl font-bold text-white">0</div>
+          <div class="text-gray-400">Total Produtos</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="text-4xl text-green-400 mb-2"><i class="fas fa-check-circle"></i></div>
+          <div id="produtos-ok" class="text-2xl font-bold text-green-400">0</div>
+          <div class="text-gray-400">Estoque OK</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="text-4xl text-yellow-400 mb-2"><i class="fas fa-exclamation-triangle"></i></div>
+          <div id="produtos-baixo" class="text-2xl font-bold text-yellow-400">0</div>
+          <div class="text-gray-400">Estoque Baixo</div>
+        </div>
+        <div class="dashboard-card">
+          <div class="text-4xl text-red-400 mb-2"><i class="fas fa-times-circle"></i></div>
+          <div id="produtos-critico" class="text-2xl font-bold text-red-400">0</div>
+          <div class="text-gray-400">Estoque Crítico</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Estoque -->
+    <section id="content-estoque" class="tab-content">
+      <h2 class="text-3xl font-bold mb-4 text-white">Controle de Estoque</h2>
+      <div class="action-buttons">
+        <button class="btn btn-add" onclick="showMovimentacaoForm();">
+          <i class="fas fa-plus mr-2"></i>Entrada de Estoque
+        </button>
+        <button class="btn btn-delete" onclick="showMovimentacaoForm('saida');">
+          <i class="fas fa-minus mr-2"></i>Saída de Estoque
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Estoque Atual</th>
+            <th>Estoque Mínimo</th>
+            <th>Status</th>
+            <th>Última Atualização</th>
+            <th style="text-align:center;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="estoque-list"></tbody>
+      </table>
+    </section>
+
+    <!-- Movimentação -->
+    <section id="content-movimentacao" class="tab-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-3xl font-bold">Movimentação de Estoque</h2>
+        <div class="action-buttons">
+          <button class="btn btn-add" onclick="showMovimentacaoForm()"><i class="fas fa-plus"></i> Nova Entrada</button>
+          <button class="btn btn-delete" onclick="showMovimentacaoForm('saida')"><i class="fas fa-minus"></i> Nova Saída</button>
+        </div>
+      </div>
+      <div id="movimentacao-form" class="form-container" style="display:none;">
+        <form id="form-movimentacao">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="mov-produto">Produto *</label>
+              <select id="mov-produto" name="produto" required>
+                <option value="">Selecione um produto</option>
+              </select>
+            </div>
+            <div>
+              <label for="mov-tipo">Tipo de Movimentação *</label>
+              <select id="mov-tipo" name="tipo" required>
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+                <option value="espera">Espera</option>
+              </select>
+            </div>
+            <div>
+              <label for="mov-quantidade">Quantidade *</label>
+              <input type="number" step="0.1" id="mov-quantidade" name="quantidade" required />
+            </div>
+            <div>
+              <label for="mov-data">Data *</label>
+              <input type="date" id="mov-data" name="data" required />
+            </div>
+            <div class="md:col-span-2">
+              <label for="mov-observacao">Observação</label>
+              <textarea id="mov-observacao" name="observacao" placeholder="Motivo da movimentação..."></textarea>
+            </div>
+          </div>
+          <div class="flex-end">
+            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Registrar Movimentação</button>
+            <button type="button" class="btn btn-cancel" onclick="hideMovimentacaoForm()"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Produto</th>
+            <th>Tipo</th>
+            <th>Quantidade</th>
+            <th>Observação</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="movimentacoes-list"></tbody>
+      </table>
+    </section>
+
+    <!-- Fornecedores -->
+    <section id="content-fornecedores" class="tab-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-3xl font-bold">Fornecedores</h2>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-add" onclick="showFornecedorForm()">
+          <i class="fas fa-plus mr-2"></i> Adicionar Fornecedor
+        </button>
+      </div>
+      <div id="fornecedor-form" class="form-container" style="display:none;">
+        <form id="form-fornecedor">
+          <input type="hidden" name="index" value="-1" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="fornecedor-nome">Nome Fantasia *</label>
+              <input type="text" id="fornecedor-nome" name="nome" required />
+            </div>
+            <div>
+              <label for="fornecedor-razaosocial">Razão Social</label>
+              <input type="text" id="fornecedor-razaosocial" name="razaosocial" />
+            </div>
+            <div>
+              <label for="fornecedor-cnpj">CNPJ</label>
+              <input type="text" id="fornecedor-cnpj" name="cnpj" placeholder="00.000.000/0000-00" />
+            </div>
+            <div>
+              <label for="fornecedor-contato">Contato *</label>
+              <input type="text" id="fornecedor-contato" name="contato" required />
+            </div>
+          </div>
+          <div class="flex-end">
+            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Salvar</button>
+            <button type="button" class="btn btn-cancel" onclick="hideFornecedorForm()"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>Contato</th>
+            <th style="text-align:center;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="fornecedores-list"></tbody>
+      </table>
+    </section>
+
+    <!-- Produtos -->
+    <section id="content-produtos" class="tab-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-3xl font-bold">Produtos</h2>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-add" onclick="showProdutoForm()">
+          <i class="fas fa-plus mr-2"></i> Adicionar Produto
+        </button>
+      </div>
+      <div id="produto-form" class="form-container" style="display:none;">
+        <form id="form-produto">
+          <input type="hidden" name="index" value="-1" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="produto-nome">Nome do Produto *</label>
+              <input type="text" id="produto-nome" name="nome" required />
+            </div>
+            <div>
+              <label for="produto-codigo-fornecedor">Código do Fornecedor</label>
+              <input type="text" id="produto-codigo-fornecedor" name="codigoFornecedor" />
+            </div>
+            <div>
+              <label for="produto-codigo-interno">Código Interno *</label>
+              <input type="text" id="produto-codigo-interno" name="codigoInterno" required />
+            </div>
+            <div>
+              <label for="produto-fornecedor">Fornecedor</label>
+              <select id="produto-fornecedor" name="fornecedor">
+                <option value="">Selecione um fornecedor</option>
+              </select>
+            </div>
+            <div>
+              <label for="produto-categoria">Categoria</label>
+              <select id="produto-categoria" name="categoria" onchange="toggleOutrosCategoria()">
+                <option value="">Selecione uma categoria</option>
+                <option value="Tinta">Tinta</option>
+                <option value="Verniz">Verniz</option>
+                <option value="Fios">Fios</option>
+                <option value="Aluminio">Alumínio</option>
+                <option value="Hidraulico">Hidráulico</option>
+                <option value="Eletrica">Elétrica</option>
+                <option value="Aco">Aço</option>
+                <option value="Painel">Painel</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+            <div id="outros-categoria-container" style="display:none;">
+              <label for="produto-outros-categoria">Outra Categoria</label>
+              <input type="text" id="produto-outros-categoria" name="outrosCategoria" placeholder="Digite a nova categoria" />
+            </div>
+            <div>
+              <label for="produto-unidade-entrada">Unidade de Entrada</label>
+              <select id="produto-unidade-entrada" name="unidadeEntrada" onchange="toggleOutrosUnidadeEntrada()">
+                <option value="">Selecione uma unidade</option>
+                <option value="Kg">Kg</option>
+                <option value="Lt">Lt</option>
+                <option value="Pct">Pct</option>
+                <option value="Milheiro">Milheiro</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+            <div id="outros-unidade-entrada-container" style="display:none;">
+              <label for="produto-outros-unidade-entrada">Outra Unidade de Entrada</label>
+              <input type="text" id="produto-outros-unidade-entrada" name="outrosUnidadeEntrada" placeholder="Digite a nova unidade" />
+            </div>
+            <div>
+              <label for="produto-unidade-estoque">Unidade de Estoque</label>
+              <select id="produto-unidade-estoque" name="unidadeEstoque" onchange="toggleOutrosUnidadeEstoque()">
+                <option value="">Selecione uma unidade</option>
+                <option value="Kg">Kg</option>
+                <option value="Lts">Lts</option>
+                <option value="Galao">Galão</option>
+                <option value="Und. Peca">Und. Peça</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+            <div id="outros-unidade-estoque-container" style="display:none;">
+              <label for="produto-outros-unidade-estoque">Outra Unidade de Estoque</label>
+              <input type="text" id="produto-outros-unidade-estoque" name="outrosUnidadeEstoque" placeholder="Digite a nova unidade" />
+            </div>
+          </div>
+          <div class="flex-end">
+            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Salvar Produto</button>
+            <button type="button" class="btn btn-cancel" onclick="hideProdutoForm()"><i class="fas fa-times"></i> Cancelar</button>
+            <button type="button" class="btn btn-add" onclick="adicionarAoPedido()"><i class="fas fa-shopping-cart"></i> Adicionar ao Pedido</button>
+            <button type="button" class="btn btn-warning" onclick="adicionarACotacao()"><i class="fas fa-file-invoice-dollar"></i> Adicionar a Cotação</button>
+          </div>
+        </form>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Código Fornecedor</th>
+            <th>Código Interno</th>
+            <th>Fornecedor</th>
+            <th>Categoria</th>
+            <th>Unidade Entrada</th>
+            <th>Unidade Estoque</th>
+            <th style="text-align:center;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="produtos-list"></tbody>
+      </table>
+    </section>
+
+    <!-- Cotações -->
+    <section id="content-cotacoes" class="tab-content">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-3xl font-bold">Cotações</h2>
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-add" onclick="showCotacaoForm()">
+          <i class="fas fa-plus mr-2"></i> Nova Cotação
+        </button>
+      </div>
+      <div id="cotacao-form" class="form-container" style="display:none;">
+        <form id="form-cotacao">
+          <input type="hidden" name="index" value="-1" />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="cotacao-nome">Nome da Cotação *</label>
+              <input type="text" id="cotacao-nome" name="nome" required />
+            </div>
+            <div>
+              <label for="cotacao-fornecedor">Fornecedor</label>
+              <select id="cotacao-fornecedor" name="fornecedor">
+                <option value="">Selecione um fornecedor</option>
+              </select>
+            </div>
+            <div>
+              <label for="cotacao-data">Data da Cotação *</label>
+              <input type="date" id="cotacao-data" name="data" required />
+            </div>
+            <div>
+              <label for="cotacao-validade">Validade da Cotação</label>
+              <input type="date" id="cotacao-validade" name="validade" />
+            </div>
+          </div>
+          <div class="flex-end">
+            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Salvar Cotação</button>
+            <button type="button" class="btn btn-cancel" onclick="hideCotacaoForm()"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </form>
+      </div>
+      <div id="cotacoes-container">
+        <!-- As cotações serão carregadas aqui dinamicamente -->
+      </div>
+    </section>
+
+    <!-- Comparação -->
+    <section id="content-comparacao" class="tab-content">
+      <h2 class="text-3xl font-bold">Comparação de Fornecedores</h2>
+    </section>
+
+    <!-- Pedidos -->
+    <section id="content-pedidos" class="tab-content">
+      <h2 class="text-3xl font-bold">Pedidos de Compra</h2>
+    </section>
+
+    <!-- Relatórios -->
+    <section id="content-relatorios" class="tab-content">
+      <h2 class="text-3xl font-bold">Relatórios e Analytics</h2>
+    </section>
+
+    <!-- Relatório Geral Modal -->
+    <div id="relatorio-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Relatório Geral</h3>
+          <button onclick="hideRelatorioGeral()" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="filtros-relatorio">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label>Período</label>
+                <select id="filtro-periodo" onchange="atualizarRelatorio()">
+                  <option value="semana">Última Semana</option>
+                  <option value="mes">Último Mês</option>
+                  <option value="personalizado">Personalizado</option>
+                </select>
+              </div>
+              <div id="datas-personalizadas" style="display: none;">
+                <label>Data Início</label>
+                <input type="date" id="data-inicio" onchange="atualizarRelatorio()" />
+              </div>
+              <div id="data-fim-container" style="display: none;">
+                <label>Data Fim</label>
+                <input type="date" id="data-fim" onchange="atualizarRelatorio()" />
+              </div>
+            </div>
+          </div>
+          
+          <div class="tabs-relatorio">
+            <button class="tab-btn active" onclick="mostrarTabRelatorio('movimentacoes')">Movimentações</button>
+            <button class="tab-btn" onclick="mostrarTabRelatorio('custos')">Custos por Produto</button>
+            <button class="tab-btn" onclick="mostrarTabRelatorio('categorias')">Custos por Categoria</button>
+          </div>
+          
+          <div id="conteudo-movimentacoes" class="tab-conteudo active">
+            <table class="relatorio-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Observação</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-movimentacoes"></tbody>
+            </table>
+          </div>
+          
+          <div id="conteudo-custos" class="tab-conteudo">
+            <table class="relatorio-table">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Categoria</th>
+                  <th>Total Movimentado</th>
+                  <th>Custo Estimado</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-custos"></tbody>
+            </table>
+          </div>
+          
+          <div id="conteudo-categorias" class="tab-conteudo">
+            <table class="relatorio-table">
+              <thead>
+                <tr>
+                  <th>Categoria</th>
+                  <th>Total Produtos</th>
+                  <th>Total Movimentado</th>
+                  <th>Custo Total</th>
+                </tr>
+              </thead>
+              <tbody id="relatorio-categorias"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
